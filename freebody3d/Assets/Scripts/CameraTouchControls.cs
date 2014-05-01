@@ -64,9 +64,9 @@ public class CameraTouchControls : MonoBehaviour {
 		// within a certain threshold, then we simply translate the camera up and down. Otherwise,
 		// we should rotate the camera to look over the "poles" of a capsule.
 		float verticalDisplacement = this.transform.position.y;
-		bool yShouldRotate = Mathf.Abs(verticalDisplacement) > maxVerticalTranslation;
+		bool yShouldTranslate = Mathf.Abs(verticalDisplacement) < maxVerticalTranslation;
 
-		if (!yShouldRotate) {
+		if (yShouldTranslate) {
 			Vector3 translationVector = delta.y * verticalTranslateRate * Vector3.down;
 			this.transform.Translate(translationVector, Space.World);
 			this.horizontalPivotPosition += translationVector;
