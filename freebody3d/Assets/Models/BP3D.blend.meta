@@ -2598,6 +2598,8 @@ ModelImporter:
     2301720: urinary_right_ureter
     2301722: urinary_urethra
     2301724: urinary_urinary_bladder
+    2301726: cardiovascular_wall_of_heart
+    2301728: integumentary_skin
     3300000: _BP28nsn
     3300002: alimentary_appendix
     3300004: alimentary_colon_nsn
@@ -3461,6 +3463,8 @@ ModelImporter:
     3301720: urinary_right_ureter
     3301722: urinary_urethra
     3301724: urinary_urinary_bladder
+    3301726: cardiovascular_wall_of_heart
+    3301728: integumentary_skin
     4300000: muscular_left_intermediate_tendon
     4300002: muscular_right_calcaneal_tendon
     4300004: muscular_left_calcaneal_tendon
@@ -4324,6 +4328,8 @@ ModelImporter:
     4301720: cardiovascular_descending_aorta
     4301722: cardiovascular_arch_of_aorta
     4301724: cardiovascular_ascending_aorta
+    4301726: cardiovascular_wall_of_heart
+    4301728: integumentary_skin
     7400000: Default Take
     9500000: //RootNode
   materials:
@@ -4360,7 +4366,7 @@ ModelImporter:
   tangentSpace:
     normalSmoothAngle: 60
     splitTangentsAcrossUV: 1
-    normalImportMode: 0
+    normalImportMode: 1
     tangentImportMode: 1
   importAnimation: 0
   copyAvatar: 0
