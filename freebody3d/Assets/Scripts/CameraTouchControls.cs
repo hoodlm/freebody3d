@@ -72,7 +72,10 @@ public class CameraTouchControls : MonoBehaviour {
 	 *	@param deltaX The X component of the user input.
 	 */
 	private void HandleHorizontalMovement(float deltaX) {
+		float yBefore = transform.position.y;
 		this.transform.RotateAround(pivotPosition, Vector3.up, horizontalRotateRate * deltaX);
+		DebugUtils.Assert(yBefore.Equals(transform.position.y),
+		                  "Y position wasn't invariant during horizonal camera movement.", this);
 	}
 
 	/**
@@ -92,6 +95,8 @@ public class CameraTouchControls : MonoBehaviour {
 		} else {
 			PerformVerticalRotation(deltaY);
 		}
+
+
 	}
 
 	/**
@@ -99,9 +104,16 @@ public class CameraTouchControls : MonoBehaviour {
 	 * 	@param deltaY A scalar for the translation.
 	 */
 	private void PerformVerticalTranslation(float deltaY) {
+		Vector3 positionBefore = transform.position;
+
 		Vector3 translationVector = deltaY * verticalTranslateRate * Vector3.up;
 		this.transform.Translate(translationVector, Space.World);
 		this.pivotPosition += translationVector;
+
+		DebugUtils.Assert(positionBefore.x.Equals(transform.position.x),
+		                  "X position wasn't invariant during vertical camera translation.", this);
+		DebugUtils.Assert(positionBefore.z.Equals(transform.position.z),
+		                  "Z position wasn't invariant during vertical camera translation.", this);
 	}
 
 	/**
@@ -114,8 +126,12 @@ public class CameraTouchControls : MonoBehaviour {
 		float angle = Vector3.Angle(Vector3.up, transform.forward);
 		float maxTopAngle    = 90 + maxVerticalRotationAngle;
 		float maxBottomAngle = 90 - maxVerticalRotationAngle;
+
 		bool yCanRotateDown  = (angle > maxBottomAngle);
 		bool yCanRotateUp    = (angle < maxTopAngle);
+		DebugUtils.Assert(yCanRotateDown || yCanRotateUp,
+		                  "Y is unable to rotate up OR down.", this);
+
 		bool yIsRotatingDown = deltaY <= 0;
 		bool yIsRotatingUp   = deltaY >= 0;
 		bool yCanRotate = (yCanRotateDown && yIsRotatingDown) || (yCanRotateUp && yIsRotatingUp);
