@@ -2,8 +2,8 @@
 
 public class CameraTouchControls : MonoBehaviour {
 
-	/// The current pivot position for horizontal rotation.
-	public Vector3 horizontalPivotPosition = Vector3.zero;
+	/// The current pivot position for the camera to rotate around.
+	public Vector3 pivotPosition = Vector3.zero;
 
 	/// The distance (in world space) that the camera can translate vertically before vertical rotation begins.
 	public float maxVerticalTranslation = 1.0f;
@@ -55,39 +55,73 @@ public class CameraTouchControls : MonoBehaviour {
 	 * 	Moves the object based on a 2-dimensional translation (e.g. from a mouse or touch drag).
 	 * 	The motion follows the surface of a capsule shape, with the "caps" of the capsule defined by
 	 * 	the "maxVerticalTranslation" variable.
+	 * 
+	 * 	@param delta The change in user input since the previous frame, in pixel coordinates.
 	 */
 	private void MoveWithTouchDelta (Vector2 delta) {
-		// Apply a horizontal rotation based on the X vector.
-		this.transform.RotateAround(horizontalPivotPosition, Vector3.up, horizontalRotateRate * delta.x);
+		HandleHorizontalMovement(delta.x);
+		// Since the input is in pixel or screen coordinates, "up" yields a negative y component.
+		// In order to make the code more readable in the sections below, we'll flip the sign on delta.y,
+		// so that a positive deltaY can be interpreted as "up" and a negative deltaY is interpreted as "down".
+		HandleVerticalMovement(-delta.y);
+	}
 
-		// Vertical motion depends on the current height of the camera. If the height position is
-		// within a certain threshold, then we simply translate the camera up and down. Otherwise,
-		// we should rotate the camera to look over the "poles" of a capsule.
+	/**
+	 *	Rotates the camera around the pivotPosition based on the horizontal component of the user input.
+	 *	This rotation is performed strictly in the XZ plane.
+	 *	@param deltaX The X component of the user input.
+	 */
+	private void HandleHorizontalMovement(float deltaX) {
+		this.transform.RotateAround(pivotPosition, Vector3.up, horizontalRotateRate * deltaX);
+	}
+
+	/**
+	 * 	Moves the camera based on the vertical component of the user input. The type of movement is
+	 * 	dependent on the current position of the camera. If the camera's Y displacement is within the
+	 * 	threshold defined by +- maxVerticalTranslation, then the camera is translated up and down.
+	 * 	If it is outside of that threshold, then the camera rotates vertically, up to a maximum angle
+	 * 	defined by maxVerticalRotationAngle.
+	 * 	@param deltaY The Y component of the user input.
+	 */
+	private void HandleVerticalMovement(float deltaY) {
 		float verticalDisplacement = this.transform.position.y;
 		bool yShouldTranslate = Mathf.Abs(verticalDisplacement) < maxVerticalTranslation;
-
+		
 		if (yShouldTranslate) {
-			Vector3 translationVector = delta.y * verticalTranslateRate * Vector3.down;
-			this.transform.Translate(translationVector, Space.World);
-			this.horizontalPivotPosition += translationVector;
+			PerformVerticalTranslation(deltaY);
 		} else {
-			// We also want to make sure not to rotate too high up.
-			float angle = Vector3.Angle(Vector3.up, transform.forward);
+			PerformVerticalRotation(deltaY);
+		}
+	}
 
-			float maxTopAngle    = 90 + maxVerticalRotationAngle;
-			float maxBottomAngle = 90 - maxVerticalRotationAngle;
+	/**
+	 * 	Translates the camera and the pivot position along the Y Axis.
+	 * 	@param deltaY A scalar for the translation.
+	 */
+	private void PerformVerticalTranslation(float deltaY) {
+		Vector3 translationVector = deltaY * verticalTranslateRate * Vector3.up;
+		this.transform.Translate(translationVector, Space.World);
+		this.pivotPosition += translationVector;
+	}
 
-			bool yCanRotateDown  = (angle > maxBottomAngle);
-			bool yCanRotateUp    = (angle < maxTopAngle);
-
-			bool yIsRotatingDown = delta.y >= 0;
-			bool yIsRotatingUp   = delta.y <= 0;
-
-			bool yCanRotate = (yCanRotateDown && yIsRotatingDown) || (yCanRotateUp && yIsRotatingUp);
-
-			if (yCanRotate) {
-				this.transform.RotateAround(horizontalPivotPosition, transform.right, verticalRotateRate * -delta.y);
-			}
+	/**
+	 * 	Rotates the camera vertically - specifically, performs a rotation around the "Left" axis of the camera
+	 * 	through the pivotPoint.
+	 * 	@param deltaY A scalar for the rotation.
+	 */
+	private void PerformVerticalRotation(float deltaY) {
+		// We make sure that we don't rotate past the maximum angle.
+		float angle = Vector3.Angle(Vector3.up, transform.forward);
+		float maxTopAngle    = 90 + maxVerticalRotationAngle;
+		float maxBottomAngle = 90 - maxVerticalRotationAngle;
+		bool yCanRotateDown  = (angle > maxBottomAngle);
+		bool yCanRotateUp    = (angle < maxTopAngle);
+		bool yIsRotatingDown = deltaY <= 0;
+		bool yIsRotatingUp   = deltaY >= 0;
+		bool yCanRotate = (yCanRotateDown && yIsRotatingDown) || (yCanRotateUp && yIsRotatingUp);
+		
+		if (yCanRotate) {
+			this.transform.RotateAround(pivotPosition, transform.right, verticalRotateRate * deltaY);
 		}
 	}
 }
